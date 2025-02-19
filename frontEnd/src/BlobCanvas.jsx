@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 
-const socket = io(`http://localhost:4000?ts=${Date.now()}`);
-// const socket = io(`https://twodmetaverse.onrender.com`);
+// const socket = io(`http://localhost:4000?ts=${Date.now()}`);
+const socket = io("wss://twodmetaverse.onrender.com", {
+  transports: ["websocket"], // Force WebSocket connection
+});
+
 
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;

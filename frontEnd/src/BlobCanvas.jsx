@@ -16,7 +16,11 @@ export default function BlobCanvas() {
   const [position, setPosition] = useState({ x: 50, y: 50 });
   const [players, setPlayers] = useState([]); // Store all players and their colors
   const backgroundRef = useRef(null);
-
+  const REGIONS = [
+    { id: 1, x: 200, y: 300, width: 100, height: 100 }, // Example region
+    { id: 2, x: 500, y: 150, width: 150, height: 150 }, // Another region
+  ];
+  
   useEffect(() => {
     console.log("Connected with ID:", socket.id);
 
@@ -41,6 +45,19 @@ export default function BlobCanvas() {
   }, []);
 
   useEffect(() => {
+    // const handleKeyDown = (e) => {
+    //   setPosition((prev) => {
+    //     let { x, y } = prev;
+    //     if (e.key === "ArrowUp") y = Math.max(0, y - SPEED);
+    //     if (e.key === "ArrowDown") y = Math.min(CANVAS_HEIGHT, y + SPEED);
+    //     if (e.key === "ArrowLeft") x = Math.max(0, x - SPEED);
+    //     if (e.key === "ArrowRight") x = Math.min(CANVAS_WIDTH, x + SPEED);
+
+    //     socket.emit("movePlayer", { x, y });
+
+    //     return { x, y };
+    //   });
+    // };
     const handleKeyDown = (e) => {
       setPosition((prev) => {
         let { x, y } = prev;
@@ -48,13 +65,23 @@ export default function BlobCanvas() {
         if (e.key === "ArrowDown") y = Math.min(CANVAS_HEIGHT, y + SPEED);
         if (e.key === "ArrowLeft") x = Math.max(0, x - SPEED);
         if (e.key === "ArrowRight") x = Math.min(CANVAS_WIDTH, x + SPEED);
-
+    
+        // SPACEBAR: Check if the player is inside any region
+        if (e.key === " " || e.key === "Spacebar") {
+          const region = REGIONS.find(
+            (r) => x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height
+          );
+    
+          if (region) {
+            window.open("https://www.youtube.com", "_blank"); // Open in a new tab
+          }
+        }
+    
         socket.emit("movePlayer", { x, y });
-
         return { x, y };
       });
     };
-
+        
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
@@ -71,17 +98,54 @@ export default function BlobCanvas() {
       draw();
     };
 
+    // const draw = () => {
+    //   if (backgroundRef.current) {
+    //     ctx.drawImage(backgroundRef.current, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    //   }
+
+    //   // Draw blob (current player)
+    //   ctx.fillStyle = "blue";
+    //   ctx.beginPath();
+    //   ctx.arc(position.x, position.y, BLOB_SIZE, 0, Math.PI * 2);
+    //   ctx.fill();
+
+    //   // Draw other players
+    //   players.forEach((player) => {
+    //     if (player.id !== socket.id) {
+    //       ctx.fillStyle = player.color;
+    //       ctx.beginPath();
+    //       ctx.arc(player.x, player.y, BLOB_SIZE, 0, Math.PI * 2);
+    //       ctx.fill();
+    //     }
+    //   });
+    // };
+    const SCALE = 1.5; // Adjust zoom level
+
     const draw = () => {
+      ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transformations
+      ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    
+      // Calculate camera position
+      let cameraX = position.x * SCALE - CANVAS_WIDTH / 2;
+      let cameraY = position.y * SCALE - CANVAS_HEIGHT / 2;
+    
+      // Clamp camera so it doesn’t move past the edges
+      cameraX = Math.max(0, Math.min(cameraX, CANVAS_WIDTH * SCALE - CANVAS_WIDTH));
+      cameraY = Math.max(0, Math.min(cameraY, CANVAS_HEIGHT * SCALE - CANVAS_HEIGHT));
+    
+      ctx.setTransform(SCALE, 0, 0, SCALE, -cameraX, -cameraY); // Apply camera transform
+    
+      // Draw background image
       if (backgroundRef.current) {
         ctx.drawImage(backgroundRef.current, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       }
-
+    
       // Draw blob (current player)
       ctx.fillStyle = "blue";
       ctx.beginPath();
       ctx.arc(position.x, position.y, BLOB_SIZE, 0, Math.PI * 2);
       ctx.fill();
-
+    
       // Draw other players
       players.forEach((player) => {
         if (player.id !== socket.id) {
@@ -91,8 +155,10 @@ export default function BlobCanvas() {
           ctx.fill();
         }
       });
+    
+      ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transformation after drawing
     };
-
+    
     draw();
   }, [position, players]);
 

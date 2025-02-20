@@ -6,20 +6,16 @@ const socket = io("wss://twodmetaverse.onrender.com", {
   transports: ["websocket"], // Force WebSocket connection
 });
 
-
-const CANVAS_WIDTH = 800;
-const CANVAS_HEIGHT = 600;
-const BLOB_SIZE = 20;
-const SPEED = 5;
-const REGIONS = [
-  { x: 100, y: 100, width: 100, height: 100, name: "Region 1" },
-  { x: 400, y: 300, width: 150, height: 150, name: "Region 2" },
-];
+const CANVAS_WIDTH = 1522;
+const CANVAS_HEIGHT = 715;
+const BLOB_SIZE = 10;
+const SPEED = 10;
 
 export default function BlobCanvas() {
   const canvasRef = useRef(null);
   const [position, setPosition] = useState({ x: 50, y: 50 });
   const [players, setPlayers] = useState([]); // Store all players and their colors
+  const backgroundRef = useRef(null);
 
   useEffect(() => {
     console.log("Connected with ID:", socket.id);
@@ -67,14 +63,18 @@ export default function BlobCanvas() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
-    const draw = () => {
-      ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    // Load background image
+    const background = new Image();
+    background.src = "/pixelcut-export.png";
+    background.onload = () => {
+      backgroundRef.current = background;
+      draw();
+    };
 
-      // Draw regions
-      ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
-      REGIONS.forEach((region) => {
-        ctx.fillRect(region.x, region.y, region.width, region.height);
-      });
+    const draw = () => {
+      if (backgroundRef.current) {
+        ctx.drawImage(backgroundRef.current, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      }
 
       // Draw blob (current player)
       ctx.fillStyle = "blue";

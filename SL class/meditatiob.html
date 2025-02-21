@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Time and Music</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f7f3e9;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+        }
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #8b5a2b;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Choose Your Meditation Settings</h2>
+        <label for="technique">Select Breathing Technique:</label>
+        <select id="technique">
+            <option value="diaphragmatic">Diaphragmatic Breathing</option>
+            <option value="4-7-8">4-7-8 Breathing</option>
+            <option value="box">Box Breathing</option>
+            <option value="nostril">Alternate Nostril Breathing</option>
+        </select>
+
+        <label for="time">Select Time:</label>
+        <select id="time">
+            <option value="5">5 Minutes</option>
+            <option value="10">10 Minutes</option>
+            <option value="15">15 Minutes</option>
+        </select>
+
+        <label for="music">Select Music:</label>
+        <select id="music">
+            <option value="music1.mp3">Music 1</option>
+            <option value="music2.mp3">Music 2</option>
+            <option value="music3.mp3">Music 3</option>
+        </select>
+
+        <button onclick="startMeditation()">Start Meditation</button>
+    </div>
+
+    <script>
+        function startMeditation() {
+            let selectedTechnique = document.getElementById("technique").value;
+            let selectedTime = document.getElementById("time").value;
+            let selectedMusic = document.getElementById("music").value;
+            
+            window.location.href = `breathing.html?technique=${selectedTechnique}&time=${selectedTime}&music=${selectedMusic}`;
+        }
+    </script>
+</body>
+</html>

@@ -37,7 +37,10 @@ export default function BlobCanvas() {
   // Define interactive regions
   const REGIONS = [
     { id: 1, x: 200, y: 300, width: 100, height: 100, link: "http://127.0.0.1:5000" },
-    { id: 2, x: 500, y: 150, width: 150, height: 150, link: "https://www.wikipedia.org" },
+    { id: 2, x: 965, y: 260, width: 100, height: 100, link: "http://127.0.0.1:5500/leaderboard.html" },
+    { id: 3, x: 695, y: 740, width: 150, height: 150, link: "http://www.ytch.xyz" },
+    { id: 4, x: 305, y: 1040, width: 50, height: 50, link: "https://play.chessbase.com/en/Seek?mins=15&secs=5" },
+    { id: 4, x: 1115, y: 165, width: 50, height: 50, link: "http://127.0.0.1:5500/SL%20class/meditatiob.html" },
   ];
 
   useEffect(() => {
@@ -98,7 +101,7 @@ export default function BlobCanvas() {
 
     // Load background image
     const background = new Image();
-    background.src = "/mapFinal.png";
+    background.src = "/pixelcut-export(1).png";
     background.onload = () => {
       backgroundRef.current = background;
       draw();

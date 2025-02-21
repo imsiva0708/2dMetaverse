@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breathing Exercise</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f7f3e9;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 70px;
+        }
+        #music {
+            display: none;
+        }
+        .animation {
+            
+            width: 100px;
+            height: 100px;
+            background-color: lightblue;
+            border-radius: 50%;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            animation: breathe 4s infinite alternate;
+        }
+        @keyframes breathe {
+            0% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+            33% {
+                transform: scale(1.3);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 1;
+            }
+        }
+        .stop-button {
+            display: none;
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .stop-button:hover {
+            background-color: darkred;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 id="technique-name"></h2>
+        <p>Follow the guided breathing exercise.</p>
+        <p id="timer"></p><br><br>
+        
+        <div class="animation" id="animation">Inhale</div>
+
+        <audio id="music" controls autoplay loop>
+            <source id="music-source" src="" type="audio/mp3">
+            Your browser does not support the audio element.
+        </audio>
+        <br><br>
+
+        <button class="stop-button" onclick="stopMeditation()">Stop</button>
+    </div>
+
+    <script>
+        // Get URL parameters
+        const params = new URLSearchParams(window.location.search);
+        const technique = params.get("technique");
+        const time = parseInt(params.get("time")) || 5; // Default to 5 minutes
+        const music = params.get("music");
+
+        // Update page content
+        document.getElementById("technique-name").innerText = technique.replace("-", " ") + " Breathing";
+        document.getElementById("music-source").src = music;
+        document.getElementById("music").load();
+        document.getElementById("timer").innerText = `Time Selected: ${time} minutes`;
+
+        let steps = ["Inhale", "Hold", "Exhale"];
+        let stepIndex = 0;
+        let totalTime = time * 60; // Convert minutes to seconds
+
+        function startBreathing() {
+            if (totalTime <= 0) {
+                document.getElementById("animation").innerText = "Session Complete!";
+                return;
+            }
+
+            document.getElementById("animation").innerText = steps[stepIndex];
+            stepIndex = (stepIndex + 1) % steps.length;
+            totalTime--;
+
+            setTimeout(startBreathing, 4000); // Change every 4 seconds
+        }
+
+        startBreathing();
+
+        function stopMeditation() {
+            window.location.href = "index.html"; // Navigate back to home
+        }
+    </script>
+</body>
+</html>

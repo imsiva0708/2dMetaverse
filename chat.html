@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Therapist Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+        #chat-box {
+            width: 90%;
+            max-width: 400px;
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+        }
+        #user-input {
+            width: 90%;
+            max-width: 400px;
+            margin-top: 10px;
+            display: flex;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px;
+            margin-left: 5px;
+            border: none;
+            background: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h2>Therapist Chat</h2>
+    <div id="chat-box"></div>
+    <div id="user-input">
+        <input type="text" id="message" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const messageBox = document.getElementById("message");
+            const chatBox = document.getElementById("chat-box");
+            const userMessage = messageBox.value;
+            if (!userMessage) return;
+
+            // Display user message
+            chatBox.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
+            messageBox.value = "";
+
+            // Call Gemini API
+            const response = await fetch("http://127.0.0.1:5000/gemini", { // Use your Flask API URL
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt: userMessage })
+            });
+
+
+            const data = await response.json();
+            const botReply = data.response || "Sorry, I couldn't understand that.";
+
+            // Display bot response
+            chatBox.innerHTML += `<p><strong>Therapist:</strong> ${botReply}</p>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>

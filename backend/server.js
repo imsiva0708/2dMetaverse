@@ -16,8 +16,31 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("playerMoved", { id: socket.id, x: data.x, y: data.y });
   });
 
+  // Handle WebRTC offers
+  socket.on("webrtcOffer", ({ to, offer }) => {
+    if (players[to]) {
+      players[to].emit("webrtcOffer", { from: socket.id, offer });
+    }
+  });
+
+  // Handle WebRTC answers
+  socket.on("webrtcAnswer", ({ to, answer }) => {
+    if (players[to]) {
+      players[to].emit("webrtcAnswer", { from: socket.id, answer });
+    }
+  });
+
+  // Handle ICE candidates
+  socket.on("webrtcCandidate", ({ to, candidate }) => {
+    if (players[to]) {
+      players[to].emit("webrtcCandidate", { from: socket.id, candidate });
+    }
+  });
+
+  // Handle disconnection
   socket.on("disconnect", () => {
     console.log("Player disconnected:", socket.id);
+    delete players[socket.id];
   });
 });
 

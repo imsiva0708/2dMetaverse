@@ -1,34 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
-import WebRTCVoiceChat from "./WebRTCVoiceChat";
 
-const socket = io(`http://localhost:4000?ts=${Date.now()}`);
-// const socket = io("wss://twodmetaverse.onrender.com", {
-//   transports: ["websocket"], // Force WebSocket connection
-// });
+const socket = io("wss://twodmetaverse.onrender.com", {
+  transports: ["websocket"], // Force WebSocket connection
+});
 
-const CANVAS_WIDTH = 1522;
-const CANVAS_HEIGHT = 715;
+const CANVAS_WIDTH = 1556;
+const CANVAS_HEIGHT = 1197;
 const BLOB_SIZE = 10;
 const SPEED = 15;
+const SCALE = 1.5; // Zoom Level
 
-const RegionPopup = ({ isOpen, onClose }) => {
+const RegionPopup = ({ isOpen, onClose, url }) => {
   if (!isOpen) return null;
-
   return (
     <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-4 rounded-lg shadow-lg w-[600px] h-[400px] flex flex-col items-center">
-        <h2 className="text-xl font-bold">You Entered the Kitchen Region!</h2>
-        <iframe
-          src="http://127.0.0.1:5000"
-          width="100%"
-          height="300px"
-          title="Kitchen"
-        />
-        <button
-          className="mt-4 px-4 py-2 bg-red-500 text-white rounded"
-          onClick={onClose}
-        >
+        <h2 className="text-xl font-bold">You Entered a Region!</h2>
+        <iframe src={url} width="100%" height="300px" title="Region Content" />
+        <button className="mt-4 px-4 py-2 bg-red-500 text-white rounded" onClick={onClose}>
           Close
         </button>
       </div>
@@ -36,18 +26,20 @@ const RegionPopup = ({ isOpen, onClose }) => {
   );
 };
 
-
 export default function BlobCanvas() {
   const canvasRef = useRef(null);
   const [position, setPosition] = useState({ x: 50, y: 50 });
   const [players, setPlayers] = useState([]); // Store all players and their colors
   const backgroundRef = useRef(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [popupContent, setPopupContent] = useState("");
+
+  // Define interactive regions
   const REGIONS = [
-    { id: 1, x: 200, y: 300, width: 100, height: 100 }, // Example region
-    { id: 2, x: 500, y: 150, width: 150, height: 150 }, // Another region
+    { id: 1, x: 200, y: 300, width: 100, height: 100, link: "http://127.0.0.1:5000" },
+    { id: 2, x: 500, y: 150, width: 150, height: 150, link: "https://www.wikipedia.org" },
   ];
-  
+
   useEffect(() => {
     console.log("Connected with ID:", socket.id);
 
@@ -72,42 +64,6 @@ export default function BlobCanvas() {
   }, []);
 
   useEffect(() => {
-    // const handleKeyDown = (e) => {
-    //   setPosition((prev) => {
-    //     let { x, y } = prev;
-    //     if (e.key === "ArrowUp") y = Math.max(0, y - SPEED);
-    //     if (e.key === "ArrowDown") y = Math.min(CANVAS_HEIGHT, y + SPEED);
-    //     if (e.key === "ArrowLeft") x = Math.max(0, x - SPEED);
-    //     if (e.key === "ArrowRight") x = Math.min(CANVAS_WIDTH, x + SPEED);
-
-    //     socket.emit("movePlayer", { x, y });
-
-    //     return { x, y };
-    //   });
-    // };
-    // const handleKeyDown = (e) => {
-    //   setPosition((prev) => {
-    //     let { x, y } = prev;
-    //     if (e.key === "ArrowUp") y = Math.max(0, y - SPEED);
-    //     if (e.key === "ArrowDown") y = Math.min(CANVAS_HEIGHT, y + SPEED);
-    //     if (e.key === "ArrowLeft") x = Math.max(0, x - SPEED);
-    //     if (e.key === "ArrowRight") x = Math.min(CANVAS_WIDTH, x + SPEED);
-    
-    //     // SPACEBAR: Check if the player is inside any region
-    //     if (e.key === " " || e.key === "Spacebar") {
-    //       const region = REGIONS.find(
-    //         (r) => x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height
-    //       );
-    
-    //       if (region) {
-    //         window.open("https://www.youtube.com", "_blank"); // Open in a new tab
-    //       }
-    //     }
-    
-    //     socket.emit("movePlayer", { x, y });
-    //     return { x, y };
-    //   });
-    // };
     const handleKeyDown = (e) => {
       setPosition((prev) => {
         let { x, y } = prev;
@@ -115,23 +71,23 @@ export default function BlobCanvas() {
         if (e.key === "ArrowDown") y = Math.min(CANVAS_HEIGHT, y + SPEED);
         if (e.key === "ArrowLeft") x = Math.max(0, x - SPEED);
         if (e.key === "ArrowRight") x = Math.min(CANVAS_WIDTH, x + SPEED);
-    
+
         // SPACEBAR: Check if the player is inside any region
         if (e.key === " " || e.key === "Spacebar") {
           const region = REGIONS.find(
             (r) => x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height
           );
-    
           if (region) {
+            setPopupContent(region.link);
             setIsPopupOpen(true);
           }
         }
-    
+
         socket.emit("movePlayer", { x, y });
         return { x, y };
       });
     };
-    
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
@@ -142,60 +98,37 @@ export default function BlobCanvas() {
 
     // Load background image
     const background = new Image();
-    background.src = "/pixelcut-export.png";
+    background.src = "/mapFinal.png";
     background.onload = () => {
       backgroundRef.current = background;
       draw();
     };
 
-    // const draw = () => {
-    //   if (backgroundRef.current) {
-    //     ctx.drawImage(backgroundRef.current, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    //   }
-
-    //   // Draw blob (current player)
-    //   ctx.fillStyle = "blue";
-    //   ctx.beginPath();
-    //   ctx.arc(position.x, position.y, BLOB_SIZE, 0, Math.PI * 2);
-    //   ctx.fill();
-
-    //   // Draw other players
-    //   players.forEach((player) => {
-    //     if (player.id !== socket.id) {
-    //       ctx.fillStyle = player.color;
-    //       ctx.beginPath();
-    //       ctx.arc(player.x, player.y, BLOB_SIZE, 0, Math.PI * 2);
-    //       ctx.fill();
-    //     }
-    //   });
-    // };
-    const SCALE = 1.5; // Adjust zoom level
-
     const draw = () => {
+      if (!backgroundRef.current) return; // Ensure background is loaded
+
       ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transformations
       ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    
+
       // Calculate camera position
       let cameraX = position.x * SCALE - CANVAS_WIDTH / 2;
       let cameraY = position.y * SCALE - CANVAS_HEIGHT / 2;
-    
+
       // Clamp camera so it doesn’t move past the edges
       cameraX = Math.max(0, Math.min(cameraX, CANVAS_WIDTH * SCALE - CANVAS_WIDTH));
       cameraY = Math.max(0, Math.min(cameraY, CANVAS_HEIGHT * SCALE - CANVAS_HEIGHT));
-    
+
       ctx.setTransform(SCALE, 0, 0, SCALE, -cameraX, -cameraY); // Apply camera transform
-    
+
       // Draw background image
-      if (backgroundRef.current) {
-        ctx.drawImage(backgroundRef.current, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      }
-    
+      ctx.drawImage(backgroundRef.current, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
       // Draw blob (current player)
       ctx.fillStyle = "blue";
       ctx.beginPath();
       ctx.arc(position.x, position.y, BLOB_SIZE, 0, Math.PI * 2);
       ctx.fill();
-    
+
       // Draw other players
       players.forEach((player) => {
         if (player.id !== socket.id) {
@@ -205,26 +138,23 @@ export default function BlobCanvas() {
           ctx.fill();
         }
       });
-    
+
       ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transformation after drawing
     };
-    
-    draw();
+
+    draw(); // Ensure draw is called when dependencies update
   }, [position, players]);
 
   return (
     <div className="relative">
-      <canvas
-        ref={canvasRef}
-        width={CANVAS_WIDTH}
-        height={CANVAS_HEIGHT}
-        className="border border-gray-500"
-      />
-      <WebRTCVoiceChat/>
-      <RegionPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
+      <canvas ref={canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} className="border border-gray-500" />
+      
+      {/* Region Popup Component */}
+      <RegionPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} url={popupContent} />
     </div>
   );
 }
+
 // Function to generate random colors for players
 const getRandomColor = () => {
   const letters = "0123456789ABCDEF";
@@ -233,4 +163,4 @@ const getRandomColor = () => {
     color += letters[Math.floor(Math.random() * 16)];
   }
   return color;
-}
+};

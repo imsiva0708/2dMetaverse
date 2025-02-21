@@ -38,9 +38,10 @@ export default function BlobCanvas() {
   const REGIONS = [
     { id: 1, x: 200, y: 300, width: 100, height: 100, link: "http://127.0.0.1:5000" },
     { id: 2, x: 965, y: 260, width: 100, height: 100, link: "http://127.0.0.1:5500/leaderboard.html" },
-    { id: 3, x: 695, y: 740, width: 150, height: 150, link: "http://www.ytch.xyz" },
-    { id: 4, x: 305, y: 1040, width: 50, height: 50, link: "https://play.chessbase.com/en/Seek?mins=15&secs=5" },
+    { id: 3, x: 650, y: 705, width: 150, height: 150, link: "http://www.ytch.xyz" },
+    { id: 4, x: 350, y: 1020, width: 50, height: 50, link: "https://play.chessbase.com/en/Seek?mins=15&secs=5" },
     { id: 4, x: 1115, y: 165, width: 50, height: 50, link: "http://127.0.0.1:5500/SL%20class/meditatiob.html" },
+    { id: 4, x: 1205, y: 935, width: 50, height: 50, link: "http://127.0.0.1:5500/chatBot/index.html" },
   ];
 
   useEffect(() => {
